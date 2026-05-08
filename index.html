@@ -413,29 +413,48 @@
   .cartridge.active-cart { transform: scale(0.96); }
 
   .cartridge.inserting {
-    animation: insertCart 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: insertCart 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .cartridge.ejecting {
+    animation: ejectCart 0.5s cubic-bezier(0.34, 0.6, 0.5, 1) forwards;
   }
 
   @keyframes insertCart {
     0% {
-      transform: translateY(0) scale(1);
+      transform: translateY(-120px) scale(0.8);
+      opacity: 0;
+    }
+    30% {
+      transform: translateY(-30px) scale(0.95);
+      opacity: 0.7;
+    }
+    60% {
+      transform: translateY(8px) scale(1.02);
       opacity: 1;
     }
-    25% {
-      transform: translateY(10px) scale(0.96);
-      opacity: 0.92;
-    }
-    55% {
-      transform: translateY(-8px) scale(1.02);
+    85% {
+      transform: translateY(-2px) scale(0.99);
       opacity: 1;
-    }
-    80% {
-      transform: translateY(4px) scale(0.98);
-      opacity: 0.98;
     }
     100% {
       transform: translateY(0) scale(1);
       opacity: 1;
+    }
+  }
+
+  @keyframes ejectCart {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    20% {
+      transform: translateY(-15px) scale(0.98);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-140px) scale(0.75);
+      opacity: 0;
     }
   }
 
@@ -817,6 +836,53 @@
     }
   }
 
+  // ─── Game Boy startup sound ───
+  function playStartupSound() {
+    try {
+      const ctx = getAudioCtx();
+      const t = ctx.currentTime;
+
+      // Classic Game Boy startup: ascending beep sequence with power sweep
+      const notes = [
+        { freq: 440, dur: 0.12, start: 0 },
+        { freq: 590, dur: 0.12, start: 0.08 },
+        { freq: 750, dur: 0.25, start: 0.16 }
+      ];
+
+      notes.forEach(note => {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.freq, t + note.start);
+        osc.frequency.exponentialRampToValueAtTime(note.freq * 1.4, t + note.start + note.dur * 0.7);
+        osc.frequency.exponentialRampToValueAtTime(note.freq * 0.8, t + note.start + note.dur);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.5, t + note.start);
+        gain.gain.exponentialRampToValueAtTime(0.02, t + note.start + note.dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t + note.start);
+        osc.stop(t + note.start + note.dur);
+      });
+
+      // Sub bass rumble at startup
+      const bass = ctx.createOscillator();
+      bass.type = 'sine';
+      bass.frequency.setValueAtTime(80, t);
+      bass.frequency.exponentialRampToValueAtTime(120, t + 0.1);
+      const bassGain = ctx.createGain();
+      bassGain.gain.setValueAtTime(0.3, t);
+      bassGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+      bass.connect(bassGain);
+      bassGain.connect(ctx.destination);
+      bass.start(t);
+      bass.stop(t + 0.3);
+    } catch (e) {
+      // silently ignore if audio blocked
+    }
+  }
+
   // ─── Screen flicker ───
   function bootFlicker(callback) {
     const overlay = document.getElementById('flickerOverlay');
@@ -826,6 +892,7 @@
     // Force reflow
     void overlay.offsetWidth;
     overlay.classList.add('flicker');
+    playStartupSound();
     setTimeout(() => {
       overlay.classList.remove('flicker');
       if (callback) callback();
@@ -856,20 +923,27 @@
     const url = resolveGameUrl(rawUrl);
     if (!url) return;
 
-    // Deselect all
-    document.querySelectorAll('.cartridge').forEach(c => c.classList.remove('selected'));
+    // Eject previously selected cartridge
+    const previousSelected = document.querySelector('.cartridge.selected');
+    if (previousSelected && previousSelected !== cart) {
+      previousSelected.classList.remove('selected');
+      previousSelected.classList.add('ejecting');
+      setTimeout(() => previousSelected.classList.remove('ejecting'), 500);
+    }
 
     // Select matching carts (desktop + mobile have same data-index)
     const idx = cart.dataset.index;
     document.querySelectorAll(`.cartridge[data-index="${idx}"]`).forEach(c => {
       c.classList.add('selected');
       c.classList.add('inserting');
-      setTimeout(() => c.classList.remove('inserting'), 500);
+      setTimeout(() => c.classList.remove('inserting'), 700);
     });
 
     playClickSound();
 
-    bootFlicker(() => loadGame(url));
+    setTimeout(() => {
+      bootFlicker(() => loadGame(url));
+    }, 350);
   }
 
   // ─── Bind all cartridges ───
