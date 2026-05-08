@@ -4,7 +4,7 @@ A Game Boy-themed portfolio page that loads Construct 3 web export projects as c
 
 ## Structure
 
-- `gameboy-portfolio.html` — main portfolio page with Game Boy UI and cartridge loader
+- `index.html` — main portfolio page with Game Boy UI and cartridge loader
 - Game export folders can be added later as separate project entries
 
 ## Local development
@@ -19,7 +19,7 @@ python -m http.server 8000
 Then visit:
 
 ```
-http://localhost:8000/gameboy-portfolio.html
+http://localhost:8000/index.html
 ```
 
 ## GitHub and Cloudflare Pages
@@ -38,4 +38,4 @@ gh repo create <username>/gameboy-portfolio --public --source=. --remote=origin 
 
 3. Connect the repository to Cloudflare Pages and deploy the `main` branch.
 
-4. Use `gameboy-portfolio.html` as the site entrypoint if needed.
+4. Use `index.html` as the site entrypoint if needed.
