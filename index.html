@@ -412,6 +412,11 @@
   .cartridge:hover { transform: translateY(-3px) scale(1.04); }
   .cartridge.active-cart { transform: scale(0.96); }
 
+  .cartridge.inserting,
+  .cartridge.ejecting {
+    z-index: 10;
+  }
+
   .cartridge.inserting {
     animation: insertCart 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
@@ -923,16 +928,20 @@
     const url = resolveGameUrl(rawUrl);
     if (!url) return;
 
-    // Eject previously selected cartridge
-    const previousSelected = document.querySelector('.cartridge.selected');
-    if (previousSelected && previousSelected !== cart) {
-      previousSelected.classList.remove('selected');
-      previousSelected.classList.add('ejecting');
-      setTimeout(() => previousSelected.classList.remove('ejecting'), 500);
+    const idx = cart.dataset.index;
+    const currentSelected = document.querySelector('.cartridge.selected');
+    const currentIndex = currentSelected?.dataset.index;
+
+    // If a different cartridge was selected, eject the old one(s)
+    if (currentIndex && currentIndex !== idx) {
+      document.querySelectorAll('.cartridge.selected').forEach(prev => {
+        prev.classList.remove('selected');
+        prev.classList.add('ejecting');
+        setTimeout(() => prev.classList.remove('ejecting'), 500);
+      });
     }
 
     // Select matching carts (desktop + mobile have same data-index)
-    const idx = cart.dataset.index;
     document.querySelectorAll(`.cartridge[data-index="${idx}"]`).forEach(c => {
       c.classList.add('selected');
       c.classList.add('inserting');
