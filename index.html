@@ -412,6 +412,16 @@
   .cartridge:hover { transform: translateY(-3px) scale(1.04); }
   .cartridge.active-cart { transform: scale(0.96); }
 
+  .cartridge-flyer {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 8px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    transform-origin: center bottom;
+    opacity: 0;
+  }
+
   .cartridge.inserting,
   .cartridge.ejecting {
     z-index: 10;
@@ -816,7 +826,7 @@
       lpf.frequency.value = 1200;
 
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.6, t);
+      gain.gain.setValueAtTime(0.12, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
 
       src.connect(lpf);
@@ -862,8 +872,8 @@
         osc.frequency.exponentialRampToValueAtTime(note.freq * 0.8, t + note.start + note.dur);
 
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.5, t + note.start);
-        gain.gain.exponentialRampToValueAtTime(0.02, t + note.start + note.dur);
+        gain.gain.setValueAtTime(0.22, t + note.start);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + note.start + note.dur);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -877,8 +887,8 @@
       bass.frequency.setValueAtTime(80, t);
       bass.frequency.exponentialRampToValueAtTime(120, t + 0.1);
       const bassGain = ctx.createGain();
-      bassGain.gain.setValueAtTime(0.3, t);
-      bassGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+      bassGain.gain.setValueAtTime(0.12, t);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
       bass.connect(bassGain);
       bassGain.connect(ctx.destination);
       bass.start(t);
@@ -886,6 +896,48 @@
     } catch (e) {
       // silently ignore if audio blocked
     }
+  }
+
+  function createCartridgeFlyer(cart) {
+    const flyer = cart.cloneNode(true);
+    flyer.classList.add('cartridge-flyer');
+    document.body.appendChild(flyer);
+    const rect = cart.getBoundingClientRect();
+    flyer.style.width = `${rect.width}px`;
+    flyer.style.height = `${rect.height}px`;
+    flyer.style.left = `${rect.left}px`;
+    flyer.style.top = `${rect.top}px`;
+    flyer.style.opacity = '1';
+    flyer.style.transform = 'translate(0, 0) scale(1)';
+    flyer.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease';
+    return flyer;
+  }
+
+  function getSlotTarget() {
+    const slot = document.querySelector('.cart-slot');
+    const rect = slot.getBoundingClientRect();
+    return {
+      left: rect.left + rect.width / 2,
+      top: rect.top + 4
+    };
+  }
+
+  function flyCartIntoSlot(cart, callback) {
+    const flyer = createCartridgeFlyer(cart);
+    const fromRect = cart.getBoundingClientRect();
+    const target = getSlotTarget();
+    const dx = target.left - (fromRect.left + fromRect.width / 2);
+    const dy = target.top - fromRect.top;
+
+    requestAnimationFrame(() => {
+      flyer.style.transform = `translate(${dx}px, ${dy}px) scale(0.9)`;
+      flyer.style.opacity = '0.92';
+    });
+
+    flyer.addEventListener('transitionend', () => {
+      flyer.remove();
+      if (callback) callback();
+    }, { once: true });
   }
 
   // ─── Screen flicker ───
@@ -929,30 +981,29 @@
     if (!url) return;
 
     const idx = cart.dataset.index;
-    const currentSelected = document.querySelector('.cartridge.selected');
-    const currentIndex = currentSelected?.dataset.index;
+    const selectedIndex = document.querySelector('.cartridge.selected')?.dataset.index;
 
-    // If a different cartridge was selected, eject the old one(s)
-    if (currentIndex && currentIndex !== idx) {
-      document.querySelectorAll('.cartridge.selected').forEach(prev => {
-        prev.classList.remove('selected');
-        prev.classList.add('ejecting');
-        setTimeout(() => prev.classList.remove('ejecting'), 500);
-      });
+    if (selectedIndex === idx) {
+      return;
     }
 
-    // Select matching carts (desktop + mobile have same data-index)
+    const previousSelected = document.querySelectorAll('.cartridge.selected');
+    previousSelected.forEach(prev => {
+      prev.classList.remove('selected');
+      prev.classList.add('ejecting');
+      setTimeout(() => prev.classList.remove('ejecting'), 500);
+    });
+
     document.querySelectorAll(`.cartridge[data-index="${idx}"]`).forEach(c => {
       c.classList.add('selected');
-      c.classList.add('inserting');
-      setTimeout(() => c.classList.remove('inserting'), 700);
     });
 
     playClickSound();
-
-    setTimeout(() => {
-      bootFlicker(() => loadGame(url));
-    }, 350);
+    flyCartIntoSlot(cart, () => {
+      setTimeout(() => {
+        bootFlicker(() => loadGame(url));
+      }, 150);
+    });
   }
 
   // ─── Bind all cartridges ───
