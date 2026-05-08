@@ -913,20 +913,20 @@
     return flyer;
   }
 
-  function getSlotTarget() {
+  function getSlotTarget(flyerRect) {
     const slot = document.querySelector('.cart-slot');
     const rect = slot.getBoundingClientRect();
     return {
-      left: rect.left + rect.width / 2,
-      top: rect.top + 4
+      left: rect.left + (rect.width - flyerRect.width) / 2,
+      top: rect.top + (rect.height - flyerRect.height) / 2
     };
   }
 
   function flyCartIntoSlot(cart, callback) {
     const flyer = createCartridgeFlyer(cart);
     const fromRect = cart.getBoundingClientRect();
-    const target = getSlotTarget();
-    const dx = target.left - (fromRect.left + fromRect.width / 2);
+    const target = getSlotTarget(fromRect);
+    const dx = target.left - fromRect.left;
     const dy = target.top - fromRect.top;
 
     requestAnimationFrame(() => {
