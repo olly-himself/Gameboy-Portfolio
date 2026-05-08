@@ -1,0 +1,38 @@
+{
+    "c2array": true,
+    "size": [
+        2,
+        4,
+        1
+    ],
+    "data": [
+        [
+            [
+                "GOLDEN BLOOD"
+            ],
+            [
+                "UNSTOPPABLE FORCE"
+            ],
+            [
+                "INFINITE KNOWLEDGE"
+            ],
+            [
+                "X CHARGED BEYOND"
+            ]
+        ],
+        [
+            [
+                "DOUBLE YOUR STATS, but you die in one hit!"
+            ],
+            [
+                "You can NEVER be stunned, but you can NEVER boost!"
+            ],
+            [
+                "You can reroll as many times as you want, but lose -2 to all stats"
+            ],
+            [
+                "Your ability is always avaliable. but takes twice as long to charge!"
+            ]
+        ]
+    ]
+}

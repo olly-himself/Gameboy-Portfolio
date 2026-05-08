@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olly Lewis — Portfolio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gb-body: #2c2c2e;
+    --gb-dark: #1a1a1c;
+    --gb-mid: #3a3a3c;
+    --gb-light: #48484a;
+    --gb-screen-bezel: #0d0d0d;
+    --gb-screen-idle: #0a1a0a;
+    --gb-screen-active: #1a3a1a;
+    --gb-btn-ab: #7c1a2e;
+    --gb-btn-ab-light: #a02040;
+    --gb-led: #ff2200;
+    --gb-dpad: #1c1c1e;
+    --gb-startsel: #3a3040;
+    --cart-bg: #1e1e2e;
+    --cart-label: #2a2a3e;
+    --shadow-depth: rgba(0,0,0,0.8);
+    --highlight: rgba(255,255,255,0.06);
+    --anim: 300ms;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: monospace;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ─── LAYOUT ─── */
+  .scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    height: 100vh;
+    width: 100vw;
+    padding: 12px;
+  }
+
+  /* ─── GAMEBOY BODY ─── */
+  .gameboy {
+    position: relative;
+    width: auto;
+    height: min(92vh, calc(100vw * 1.6));
+    max-width: 280px;
+    aspect-ratio: 220 / 420;
+    flex-shrink: 0;
+    /* DMG shape: rounded top, angled bottom-left */
+    background: linear-gradient(160deg,
+      #3a3a3c 0%,
+      #2c2c2e 25%,
+      #222224 60%,
+      #1a1a1c 100%
+    );
+    border-radius: 18px 18px 18px 36px;
+    padding: 18px 16px 22px;
+    box-shadow:
+      /* outer ambient */
+      0 20px 60px rgba(0,0,0,0.95),
+      0 8px 24px rgba(0,0,0,0.8),
+      /* top highlight edge */
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      /* left edge highlight */
+      inset 1px 0 0 rgba(255,255,255,0.04),
+      /* right inner shadow */
+      inset -2px 0 6px rgba(0,0,0,0.5),
+      /* bottom inner shadow */
+      inset 0 -3px 8px rgba(0,0,0,0.6);
+    /* subtle plastic noise texture */
+    background-image:
+      linear-gradient(160deg, #3a3a3c 0%, #2c2c2e 25%, #222224 60%, #1a1a1c 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-blend-mode: normal, overlay;
+  }
+
+  /* ─── TOP LABEL AREA ─── */
+  .gb-brand {
+    text-align: center;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
+
+  .gb-brand-text {
+    font-size: 7px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+  }
+
+  /* ─── POWER LED ─── */
+  .power-led {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ff6644, #ff2200);
+    box-shadow: 0 0 6px 2px rgba(255,34,0,0.7), 0 0 12px 4px rgba(255,34,0,0.3);
+    animation: ledPulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes ledPulse {
+    0%, 100% { box-shadow: 0 0 6px 2px rgba(255,34,0,0.7), 0 0 12px 4px rgba(255,34,0,0.3); }
+    50% { box-shadow: 0 0 10px 4px rgba(255,34,0,0.95), 0 0 20px 8px rgba(255,34,0,0.5); }
+  }
+
+  /* ─── SCREEN BEZEL ─── */
+  .screen-bezel {
+    background: linear-gradient(180deg, #0a0a0a 0%, #111 100%);
+    border-radius: 10px 10px 6px 6px;
+    padding: 12px 12px 16px;
+    box-shadow:
+      inset 0 2px 8px rgba(0,0,0,0.9),
+      inset 0 0 0 1px rgba(0,0,0,0.8),
+      0 1px 0 rgba(255,255,255,0.05);
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .screen-bezel::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    border-radius: 2px;
+  }
+
+  .screen-label {
+    font-size: 5px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ─── SCREEN ─── */
+  .screen-wrap {
+    position: relative;
+    background: var(--gb-screen-idle);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow:
+      inset 0 0 20px rgba(0,0,0,0.9),
+      inset 0 0 4px rgba(0,200,0,0.05),
+      0 0 0 1px #000;
+    aspect-ratio: 10/9;
+    width: 100%;
+  }
+
+  .screen-wrap.active {
+    box-shadow:
+      inset 0 0 20px rgba(0,0,0,0.7),
+      inset 0 0 30px rgba(0,200,0,0.08),
+      0 0 0 1px #000,
+      0 0 8px rgba(0,180,0,0.15);
+  }
+
+  .screen-wrap iframe {
+    width: 100%; height: 100%;
+    border: none;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .screen-wrap iframe.loaded { opacity: 1; }
+
+  /* ─── SCREEN FLICKER OVERLAY ─── */
+  .flicker-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,0,0.03) 2px,
+      rgba(0,255,0,0.03) 4px
+    );
+  }
+
+  .flicker-overlay.flicker { animation: bootFlicker 1.4s ease-out forwards; }
+
+  @keyframes bootFlicker {
+    0%   { opacity: 1; background-color: rgba(0,255,0,0.25); }
+    8%   { opacity: 0; }
+    15%  { opacity: 1; background-color: rgba(0,255,0,0.15); }
+    22%  { opacity: 0; }
+    35%  { opacity: 0.8; background-color: rgba(0,255,0,0.08); }
+    50%  { opacity: 0.2; }
+    70%  { opacity: 0.4; }
+    85%  { opacity: 0.1; }
+    100% { opacity: 0; }
+  }
+
+  /* ─── CONTROLS AREA ─── */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  /* ─── D-PAD ─── */
+  .dpad {
+    position: relative;
+    width: 56px; height: 56px;
+    flex-shrink: 0;
+  }
+
+  .dpad-h, .dpad-v {
+    position: absolute;
+    background: linear-gradient(180deg, #2a2a2c 0%, #1c1c1e 50%, #242426 100%);
+    border-radius: 3px;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.5);
+  }
+
+  .dpad-h {
+    width: 100%; height: 33.3%;
+    top: 33.3%; left: 0;
+  }
+
+  .dpad-v {
+    height: 100%; width: 33.3%;
+    left: 33.3%; top: 0;
+  }
+
+  .dpad-center {
+    position: absolute;
+    width: 33.3%; height: 33.3%;
+    top: 33.3%; left: 33.3%;
+    background: #1c1c1e;
+    z-index: 1;
+  }
+
+  /* ─── A/B BUTTONS ─── */
+  .ab-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transform: rotate(-15deg);
+    flex-shrink: 0;
+  }
+
+  .ab-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-ab {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%,
+      #c0304a,
+      #7c1a2e 50%,
+      #5a0e20 100%
+    );
+    box-shadow:
+      0 3px 6px rgba(0,0,0,0.8),
+      0 1px 2px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.15),
+      inset 0 -2px 4px rgba(0,0,0,0.4);
+    cursor: pointer;
+    position: relative;
+    transition: transform 80ms, box-shadow 80ms;
+  }
+
+  .btn-ab:active {
+    transform: translateY(1px);
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .btn-ab .btn-label {
+    position: absolute;
+    bottom: -12px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 7px;
+    color: rgba(255,255,255,0.35);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── START / SELECT ─── */
+  .startsel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .btn-startsel {
+    width: 36px; height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(180deg, #3a3040 0%, #2a2030 100%);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 -1px 2px rgba(0,0,0,0.5);
+    cursor: pointer;
+    position: relative;
+    transform: rotate(-10deg);
+    transition: transform 80ms;
+  }
+
+  .btn-startsel:active { transform: rotate(-10deg) translateY(1px); }
+
+  .btn-startsel .btn-label {
+    position: absolute;
+    bottom: -11px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 6px;
+    color: rgba(255,255,255,0.3);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── SPEAKER GRILLE ─── */
+  .speaker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    padding: 4px;
+    transform: rotate(-15deg);
+    opacity: 0.7;
+  }
+
+  .speaker-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #111;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.9), 0 0 0 0.5px rgba(0,0,0,0.8);
+  }
+
+  /* ─── CARTRIDGE SLOT (bottom) ─── */
+  .cart-slot {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 12px;
+    background: linear-gradient(180deg, #0d0d0d, #1a1a1a);
+    border-radius: 0 0 6px 6px;
+    box-shadow:
+      inset 0 2px 4px rgba(0,0,0,0.9),
+      inset 0 0 0 1px rgba(0,0,0,0.7);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 2px;
+  }
+
+  .cart-slot-label {
+    font-size: 5px;
+    color: rgba(255,255,255,0.1);
+    letter-spacing: 1px;
+  }
+
+  /* ─── CARTRIDGE PANEL ─── */
+  .cart-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .cart-panel-title {
+    font-size: 8px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  /* ─── CARTRIDGE ─── */
+  .cartridge {
+    width: 64px;
+    cursor: pointer;
+    position: relative;
+    transform-origin: center bottom;
+    will-change: transform;
+    transition: transform var(--anim) cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .cartridge:hover { transform: translateY(-3px) scale(1.04); }
+  .cartridge.active-cart { transform: scale(0.96); }
+
+  .cartridge.inserting {
+    animation: insertCart 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes insertCart {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    25% {
+      transform: translateY(10px) scale(0.96);
+      opacity: 0.92;
+    }
+    55% {
+      transform: translateY(-8px) scale(1.02);
+      opacity: 1;
+    }
+    80% {
+      transform: translateY(4px) scale(0.98);
+      opacity: 0.98;
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .cart-body {
+    background: linear-gradient(160deg,
+      #2e2e3e 0%,
+      #1e1e2e 40%,
+      #16162a 100%
+    );
+    border-radius: 4px 4px 8px 8px;
+    padding: 6px 5px 8px;
+    box-shadow:
+      0 4px 12px rgba(0,0,0,0.8),
+      0 2px 4px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset -1px 0 0 rgba(0,0,0,0.4),
+      inset 1px 0 0 rgba(255,255,255,0.04);
+    position: relative;
+    height: 80px;
+  }
+
+  /* notch at top of cart */
+  .cart-body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 24px; height: 4px;
+    background: #0d0d18;
+    border-radius: 0 0 4px 4px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+  }
+
+  /* gold contacts at bottom */
+  .cart-contacts {
+    position: absolute;
+    bottom: 0; left: 6px; right: 6px;
+    height: 8px;
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+  }
+
+  .cart-contact {
+    flex: 1;
+    height: 100%;
+    background: linear-gradient(180deg, #c8a800, #a08000);
+    border-radius: 1px 1px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255,220,0,0.4);
+  }
+
+  .cart-label-area {
+    margin-top: 8px;
+    background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+    border-radius: 2px;
+    padding: 4px 4px;
+    height: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+
+  .cart-name {
+    font-size: 7px;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+    text-transform: uppercase;
+  }
+
+  .cart-num {
+    font-size: 6px;
+    color: rgba(255,255,0,0.4);
+    text-align: center;
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* active cart highlight */
+  .cartridge.selected .cart-body {
+    box-shadow:
+      0 4px 12px rgba(0,0,0,0.8),
+      0 2px 4px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      0 0 0 1px rgba(0,200,0,0.4),
+      0 0 12px rgba(0,200,0,0.2);
+  }
+
+  /* ─── MOBILE CAROUSEL ─── */
+  .cart-carousel {
+    display: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 12px;
+    padding: 8px 16px 12px;
+    width: 100%;
+  }
+  .cart-carousel::-webkit-scrollbar { display: none; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-height: 700px) {
+    .gameboy { max-width: 240px; }
+    .btn-ab { width: 18px; height: 18px; }
+    .dpad { width: 46px; height: 46px; }
+  }
+
+  @media (max-width: 600px) {
+    .scene {
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: auto;
+      min-height: 100vh;
+      padding: 16px 8px 0;
+    }
+    html, body { overflow: auto; }
+    .cart-panel { display: none; }
+    .cart-carousel { display: flex; }
+    .gameboy { max-width: 90vw; }
+  }
+
+  @media (min-width: 601px) {
+    .gameboy { max-width: 260px; }
+    /* scale everything down so it fits in viewport height */
+    @supports (height: 100dvh) {
+      .scene { height: 100dvh; }
+    }
+  }
+
+  /* keep gameboy fitting vertically */
+  @media (max-height: 620px) and (min-width: 601px) {
+    .gameboy { max-width: 220px; }
+    .screen-bezel { padding: 8px 8px 10px; }
+    .controls { margin-bottom: 6px; }
+    .gb-brand { margin-bottom: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+
+  <!-- ═══ GAMEBOY ═══ -->
+  <div class="gameboy" id="gameboy">
+
+    <!-- Top bar: brand + LED -->
+    <div class="gb-brand">
+      <span class="gb-brand-text">Game Boy</span>
+      <div class="power-led" id="powerLed"></div>
+    </div>
+
+    <!-- Screen -->
+    <div class="screen-bezel">
+      <div class="screen-label">DOT MATRIX WITH STEREO SOUND</div>
+      <div class="screen-wrap" id="screenWrap">
+        <iframe id="gameScreen"
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          src="about:blank"
+          title="Game Screen"
+          aria-label="Game content">
+        </iframe>
+        <div class="flicker-overlay" id="flickerOverlay"></div>
+      </div>
+    </div>
+
+    <!-- Controls row -->
+    <div class="controls">
+      <!-- D-Pad -->
+      <div class="dpad" aria-hidden="true">
+        <div class="dpad-h"></div>
+        <div class="dpad-v"></div>
+        <div class="dpad-center"></div>
+      </div>
+
+      <!-- Start/Select -->
+      <div class="startsel" aria-hidden="true">
+        <div class="btn-startsel">
+          <span class="btn-label">SELECT</span>
+        </div>
+        <div class="btn-startsel">
+          <span class="btn-label">START</span>
+        </div>
+      </div>
+
+      <!-- A/B Buttons -->
+      <div class="ab-buttons" aria-hidden="true">
+        <div class="ab-row">
+          <div class="btn-ab"><span class="btn-label">B</span></div>
+          <div class="btn-ab"><span class="btn-label">A</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Speaker -->
+    <div style="display:flex; justify-content:flex-end; padding: 0 8px 6px;">
+      <div class="speaker" aria-hidden="true">
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+        <div class="speaker-dot"></div><div class="speaker-dot"></div><div class="speaker-dot"></div>
+      </div>
+    </div>
+
+    <!-- Cartridge slot -->
+    <div class="cart-slot">
+      <span class="cart-slot-label">INSERT CARTRIDGE</span>
+    </div>
+
+  </div>
+  <!-- end .gameboy -->
+
+  <!-- ═══ CARTRIDGE PANEL (desktop) ═══ -->
+  <div class="cart-panel" role="list" aria-label="Game cartridges">
+    <div class="cart-panel-title">Cartridges</div>
+
+    <div class="cartridge selected" data-url="./GallopingGoldExport/index.html" data-index="0"
+         role="listitem" tabindex="0" aria-label="Galloping Gold">
+      <div class="cart-body">
+        <div class="cart-label-area">
+          <div class="cart-name">Galloping Gold</div>
+          <div class="cart-num">GG-001</div>
+        </div>
+        <div class="cart-contacts">
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cartridge" data-url="#project-2" data-index="1"
+         role="listitem" tabindex="0" aria-label="Project 2">
+      <div class="cart-body">
+        <div class="cart-label-area">
+          <div class="cart-name">Project 2</div>
+          <div class="cart-num">PR-002</div>
+        </div>
+        <div class="cart-contacts">
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cartridge" data-url="#project-3" data-index="2"
+         role="listitem" tabindex="0" aria-label="Project 3">
+      <div class="cart-body">
+        <div class="cart-label-area">
+          <div class="cart-name">Project 3</div>
+          <div class="cart-num">PR-003</div>
+        </div>
+        <div class="cart-contacts">
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+          <div class="cart-contact"></div><div class="cart-contact"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- end .cart-panel -->
+
+</div>
+<!-- end .scene -->
+
+<!-- ═══ MOBILE CAROUSEL ═══ -->
+<div class="cart-carousel" role="list" aria-label="Game cartridges">
+  <div class="cartridge selected" data-url="./GallopingGoldExport/index.html" data-index="0"
+       role="listitem" tabindex="0" aria-label="Galloping Gold">
+    <div class="cart-body">
+      <div class="cart-label-area">
+        <div class="cart-name">Galloping Gold</div>
+        <div class="cart-num">GG-001</div>
+      </div>
+      <div class="cart-contacts">
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cartridge" data-url="#project-2" data-index="1"
+       role="listitem" tabindex="0" aria-label="Project 2">
+    <div class="cart-body">
+      <div class="cart-label-area">
+        <div class="cart-name">Project 2</div>
+        <div class="cart-num">PR-002</div>
+      </div>
+      <div class="cart-contacts">
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cartridge" data-url="#project-3" data-index="2"
+       role="listitem" tabindex="0" aria-label="Project 3">
+    <div class="cart-body">
+      <div class="cart-label-area">
+        <div class="cart-name">Project 3</div>
+        <div class="cart-num">PR-003</div>
+      </div>
+      <div class="cart-contacts">
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+        <div class="cart-contact"></div><div class="cart-contact"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Audio ───
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playClickSound() {
+    try {
+      const ctx = getAudioCtx();
+      const t = ctx.currentTime;
+
+      // Plastic click: short noise burst + soft thud
+      const bufLen = ctx.sampleRate * 0.08;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) {
+        const decay = Math.exp(-i / (bufLen * 0.08));
+        data[i] = (Math.random() * 2 - 1) * decay * (i < bufLen * 0.05 ? 1 : 0.3);
+      }
+
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+
+      // Low-pass so it sounds plastic not metallic
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.value = 1200;
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.6, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
+      src.connect(lpf);
+      lpf.connect(gain);
+      gain.connect(ctx.destination);
+      src.start(t);
+
+      // Soft thud underneath
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(120, t);
+      osc.frequency.exponentialRampToValueAtTime(40, t + 0.06);
+      const thudGain = ctx.createGain();
+      thudGain.gain.setValueAtTime(0.3, t);
+      thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      osc.connect(thudGain);
+      thudGain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.06);
+    } catch (e) {
+      // silently ignore if audio blocked
+    }
+  }
+
+  // ─── Screen flicker ───
+  function bootFlicker(callback) {
+    const overlay = document.getElementById('flickerOverlay');
+    const screen = document.getElementById('screenWrap');
+    screen.classList.add('active');
+    overlay.classList.remove('flicker');
+    // Force reflow
+    void overlay.offsetWidth;
+    overlay.classList.add('flicker');
+    setTimeout(() => {
+      overlay.classList.remove('flicker');
+      if (callback) callback();
+    }, 1400);
+  }
+
+  // ─── Load game ───
+  function loadGame(url) {
+    const iframe = document.getElementById('gameScreen');
+    iframe.classList.remove('loaded');
+    setTimeout(() => {
+      iframe.src = url;
+      iframe.onload = () => iframe.classList.add('loaded');
+      // Fallback for about:blank or same-origin
+      setTimeout(() => iframe.classList.add('loaded'), 800);
+    }, 200);
+  }
+
+  const gameRoutes = {
+    '#galloping-gold': './GallopingGoldExport/index.html',
+    '#project-2': './Project2Export/index.html',
+    '#project-3': './Project3Export/index.html'
+  };
+
+  function resolveGameUrl(url) {
+    return url && url.startsWith('#') ? (gameRoutes[url] || url) : url;
+  }
+
+  // ─── Cartridge click ───
+  function handleCartridgeClick(cart) {
+    const rawUrl = cart.dataset.url;
+    const url = resolveGameUrl(rawUrl);
+    if (!url) return;
+
+    // Deselect all
+    document.querySelectorAll('.cartridge').forEach(c => c.classList.remove('selected'));
+
+    // Select matching carts (desktop + mobile have same data-index)
+    const idx = cart.dataset.index;
+    document.querySelectorAll(`.cartridge[data-index="${idx}"]`).forEach(c => {
+      c.classList.add('selected');
+      c.classList.add('inserting');
+      setTimeout(() => c.classList.remove('inserting'), 500);
+    });
+
+    playClickSound();
+
+    bootFlicker(() => loadGame(url));
+  }
+
+  // ─── Bind all cartridges ───
+  document.querySelectorAll('.cartridge').forEach(cart => {
+    cart.addEventListener('click', () => handleCartridgeClick(cart));
+    cart.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCartridgeClick(cart);
+      }
+    });
+  });
+
+  // ─── Load first game on init ───
+  const first = document.querySelector('.cartridge[data-index="0"]');
+  if (first) {
+    setTimeout(() => {
+      bootFlicker(() => loadGame(resolveGameUrl(first.dataset.url)));
+    }, 600);
+  }
+
+  // ─── Prefers reduced motion ───
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.style.setProperty('--anim', '0ms');
+    const led = document.querySelector('.power-led');
+    if (led) led.style.animation = 'none';
+  }
+})();
+</script>
+</body>
+</html>

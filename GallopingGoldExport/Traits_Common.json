@@ -1,0 +1,116 @@
+{
+    "c2array": true,
+    "size": [
+        2,
+        17,
+        1
+    ],
+    "data": [
+        [
+            [
+                "Gassy"
+            ],
+            [
+                "Big Boy"
+            ],
+            [
+                "Late Bloomer"
+            ],
+            [
+                "Air Vents"
+            ],
+            [
+                "Tailwind"
+            ],
+            [
+                "Heavy Hooves"
+            ],
+            [
+                "Slipstream"
+            ],
+            [
+                "Photo Finish"
+            ],
+            [
+                "Hot Potato"
+            ],
+            [
+                "Ice Skates"
+            ],
+            [
+                "Steering Wheel"
+            ],
+            [
+                "Push Through"
+            ],
+            [
+                "Growth Serum"
+            ],
+            [
+                "Burning Hot"
+            ],
+            [
+                "Thorns II"
+            ],
+            [
+                "Black Hole"
+            ],
+            [
+                "Rolling Giant"
+            ]
+        ],
+        [
+            [
+                "Blast forward when you hit a checkpoint"
+            ],
+            [
+                "Your horse is 1.5x bigger"
+            ],
+            [
+                "Speed is halved for first 10 seconds. Then Boosted for the rest of the race!"
+            ],
+            [
+                "lose 25% heat and give it to nearby horses when hitting a checkpoint."
+            ],
+            [
+                "Move slightly faster when behind another horse"
+            ],
+            [
+                "Bumping other people stuns them"
+            ],
+            [
+                "Gain a small boost when passing another horse"
+            ],
+            [
+                "Move 20% faster after the final checkpoint"
+            ],
+            [
+                "When burning, you can pass it to someone else by hitting them!"
+            ],
+            [
+                "Slide forwards when not accelerating."
+            ],
+            [
+                "Make steering MUCH faster."
+            ],
+            [
+                "At max speed collisions don't affect you"
+            ],
+            [
+                "Get 20% bigger every checkpoint"
+            ],
+            [
+                "When burning, DOUBLE your speed."
+            ],
+            [
+                "When players hit you, they take the same damage."
+            ],
+            [
+                "Pull the nearest horse into you when hitting a checkpoint."
+            ],
+            [
+                "Gain 5% extra speed for each point in HEALTH"
+            ]
+        ]
+    ]
+}
