@@ -658,12 +658,12 @@
   <div class="cart-panel" role="list" aria-label="Game cartridges">
     <div class="cart-panel-title">Cartridges</div>
 
-    <div class="cartridge selected" data-url="./GallopingGoldExport/index.html" data-index="0"
-         role="listitem" tabindex="0" aria-label="Galloping Gold">
+    <div class="cartridge selected" data-url="about:blank" data-index="0"
+         role="listitem" tabindex="0" aria-label="Project 1">
       <div class="cart-body">
         <div class="cart-label-area">
-          <div class="cart-name">Galloping Gold</div>
-          <div class="cart-num">GG-001</div>
+          <div class="cart-name">Project 1</div>
+          <div class="cart-num">PR-001</div>
         </div>
         <div class="cart-contacts">
           <div class="cart-contact"></div><div class="cart-contact"></div>
@@ -711,12 +711,12 @@
 
 <!-- ═══ MOBILE CAROUSEL ═══ -->
 <div class="cart-carousel" role="list" aria-label="Game cartridges">
-  <div class="cartridge selected" data-url="./GallopingGoldExport/index.html" data-index="0"
-       role="listitem" tabindex="0" aria-label="Galloping Gold">
+  <div class="cartridge selected" data-url="about:blank" data-index="0"
+       role="listitem" tabindex="0" aria-label="Project 1">
     <div class="cart-body">
       <div class="cart-label-area">
-        <div class="cart-name">Galloping Gold</div>
-        <div class="cart-num">GG-001</div>
+        <div class="cart-name">Project 1</div>
+        <div class="cart-num">PR-001</div>
       </div>
       <div class="cart-contacts">
         <div class="cart-contact"></div><div class="cart-contact"></div>
@@ -844,11 +844,7 @@
     }, 200);
   }
 
-  const gameRoutes = {
-    '#galloping-gold': './GallopingGoldExport/index.html',
-    '#project-2': './Project2Export/index.html',
-    '#project-3': './Project3Export/index.html'
-  };
+  const gameRoutes = {};
 
   function resolveGameUrl(url) {
     return url && url.startsWith('#') ? (gameRoutes[url] || url) : url;

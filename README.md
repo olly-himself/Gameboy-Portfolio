@@ -5,7 +5,7 @@ A Game Boy-themed portfolio page that loads Construct 3 web export projects as c
 ## Structure
 
 - `gameboy-portfolio.html` — main portfolio page with Game Boy UI and cartridge loader
-- `GallopingGoldExport/` — example Construct 3 export folder
+- Game export folders can be added later as separate project entries
 
 ## Local development
 
