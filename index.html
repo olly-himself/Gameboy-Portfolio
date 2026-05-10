@@ -901,6 +901,7 @@
   function createCartridgeFlyer(cart) {
     const flyer = cart.cloneNode(true);
     flyer.classList.add('cartridge-flyer');
+    flyer.classList.remove('selected', 'ejecting', 'inserting');
     document.body.appendChild(flyer);
     const rect = cart.getBoundingClientRect();
     flyer.style.width = `${rect.width}px`;
@@ -929,15 +930,22 @@
     const dx = target.left - fromRect.left;
     const dy = target.top - fromRect.top;
 
+    let finished = false;
+    const cleanup = () => {
+      if (!finished) {
+        finished = true;
+        flyer.remove();
+        if (callback) callback();
+      }
+    };
+
+    flyer.addEventListener('transitionend', cleanup, { once: true });
+    setTimeout(cleanup, 900);
+
     requestAnimationFrame(() => {
       flyer.style.transform = `translate(${dx}px, ${dy}px) scale(0.9)`;
-      flyer.style.opacity = '0.92';
+      flyer.style.opacity = '0';
     });
-
-    flyer.addEventListener('transitionend', () => {
-      flyer.remove();
-      if (callback) callback();
-    }, { once: true });
   }
 
   // ─── Screen flicker ───
@@ -987,22 +995,22 @@
       return;
     }
 
-    const previousSelected = document.querySelectorAll('.cartridge.selected');
-    previousSelected.forEach(prev => {
-      prev.classList.remove('selected');
-      prev.classList.add('ejecting');
-      setTimeout(() => prev.classList.remove('ejecting'), 500);
-    });
-
-    document.querySelectorAll(`.cartridge[data-index="${idx}"]`).forEach(c => {
-      c.classList.add('selected');
+    const allCarts = document.querySelectorAll('.cartridge');
+    allCarts.forEach(c => {
+      if (c.dataset.index === idx) {
+        c.classList.add('selected');
+        c.style.visibility = 'hidden';
+      } else {
+        c.classList.remove('selected');
+        c.style.visibility = 'visible';
+      }
     });
 
     playClickSound();
     flyCartIntoSlot(cart, () => {
       setTimeout(() => {
         bootFlicker(() => loadGame(url));
-      }, 150);
+      }, 50);
     });
   }
 
