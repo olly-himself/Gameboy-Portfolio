@@ -421,56 +421,6 @@
     opacity: 0;
   }
 
-  .cartridge.inserting,
-  .cartridge.ejecting {
-    z-index: 10;
-  }
-
-  .cartridge.inserting {
-    animation: insertCart 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .cartridge.ejecting {
-    animation: ejectCart 0.5s cubic-bezier(0.34, 0.6, 0.5, 1) forwards;
-  }
-
-  @keyframes insertCart {
-    0% {
-      transform: translateY(-120px) scale(0.8);
-      opacity: 0;
-    }
-    30% {
-      transform: translateY(-30px) scale(0.95);
-      opacity: 0.7;
-    }
-    60% {
-      transform: translateY(8px) scale(1.02);
-      opacity: 1;
-    }
-    85% {
-      transform: translateY(-2px) scale(0.99);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes ejectCart {
-    0% {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-    }
-    20% {
-      transform: translateY(-15px) scale(0.98);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(-140px) scale(0.75);
-      opacity: 0;
-    }
-  }
 
   .cart-body {
     background: linear-gradient(160deg,
@@ -605,6 +555,47 @@
     .screen-bezel { padding: 8px 8px 10px; }
     .controls { margin-bottom: 6px; }
     .gb-brand { margin-bottom: 4px; }
+  }
+
+  /* ─── ZOOM OVERLAY ─── */
+  .zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    z-index: 999;
+    pointer-events: none;
+    transition: background 0.7s ease;
+  }
+  .zoom-overlay.active { background: rgba(0,0,0,0.92); }
+
+  /* ─── BACK BUTTON ─── */
+  .back-btn {
+    position: fixed;
+    bottom: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 8px 22px;
+    font-family: monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .back-btn:hover {
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+  }
+  .back-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
   }
 </style>
 </head>
@@ -985,6 +976,84 @@
     return url && url.startsWith('#') ? (gameRoutes[url] || url) : url;
   }
 
+  // ─── Screen zoom ───
+  let activeCart = null;
+  let screenNaturalRect = null;
+
+  function zoomScreenIn() {
+    const wrap = document.getElementById('screenWrap');
+    const overlay = document.getElementById('zoomOverlay');
+    const backBtn = document.getElementById('backBtn');
+
+    const rect = wrap.getBoundingClientRect();
+    screenNaturalRect = rect;
+
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    const toSize = vmin * 0.9;
+    const toX = (window.innerWidth - toSize) / 2;
+    const toY = (window.innerHeight - toSize) / 2;
+
+    wrap.style.cssText = `
+      position: fixed;
+      left: ${rect.left}px;
+      top: ${rect.top}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      z-index: 1000;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: none;
+    `;
+
+    overlay.classList.add('active');
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      wrap.style.transition = 'left 0.7s cubic-bezier(0.4,0,0.2,1), top 0.7s cubic-bezier(0.4,0,0.2,1), width 0.7s cubic-bezier(0.4,0,0.2,1), height 0.7s cubic-bezier(0.4,0,0.2,1)';
+      wrap.style.left = `${toX}px`;
+      wrap.style.top = `${toY}px`;
+      wrap.style.width = `${toSize}px`;
+      wrap.style.height = `${toSize}px`;
+      setTimeout(() => backBtn.classList.add('visible'), 600);
+    }));
+  }
+
+  function zoomScreenOut() {
+    const wrap = document.getElementById('screenWrap');
+    const overlay = document.getElementById('zoomOverlay');
+    const backBtn = document.getElementById('backBtn');
+
+    backBtn.classList.remove('visible');
+    overlay.classList.remove('active');
+
+    const rect = screenNaturalRect;
+    if (rect) {
+      wrap.style.transition = 'left 0.6s cubic-bezier(0.4,0,0.2,1), top 0.6s cubic-bezier(0.4,0,0.2,1), width 0.6s cubic-bezier(0.4,0,0.2,1), height 0.6s cubic-bezier(0.4,0,0.2,1)';
+      wrap.style.left = `${rect.left}px`;
+      wrap.style.top = `${rect.top}px`;
+      wrap.style.width = `${rect.width}px`;
+      wrap.style.height = `${rect.height}px`;
+    }
+
+    setTimeout(() => {
+      wrap.style.cssText = '';
+      screenNaturalRect = null;
+
+      const iframe = document.getElementById('gameScreen');
+      iframe.classList.remove('loaded');
+      iframe.src = 'about:blank';
+      document.getElementById('screenWrap').classList.remove('active');
+
+      if (activeCart) {
+        activeCart.style.visibility = 'visible';
+        activeCart.classList.remove('selected');
+        activeCart = null;
+      }
+      document.querySelectorAll('.cartridge').forEach(c => {
+        c.style.visibility = 'visible';
+      });
+    }, 650);
+  }
+
   // ─── Cartridge click ───
   function handleCartridgeClick(cart) {
     const rawUrl = cart.dataset.url;
@@ -992,16 +1061,19 @@
     if (!url) return;
 
     const idx = cart.dataset.index;
-    const allCarts = document.querySelectorAll('.cartridge');
-    allCarts.forEach(c => {
+    document.querySelectorAll('.cartridge').forEach(c => {
       c.classList.toggle('selected', c.dataset.index === idx);
       c.style.visibility = 'visible';
     });
 
+    activeCart = cart;
     playClickSound();
     flyCartIntoSlot(cart, () => {
       setTimeout(() => {
-        bootFlicker(() => loadGame(url));
+        bootFlicker(() => {
+          loadGame(url);
+          setTimeout(zoomScreenIn, 300);
+        });
       }, 50);
     });
   }
@@ -1016,6 +1088,8 @@
       }
     });
   });
+
+  document.getElementById('backBtn').addEventListener('click', zoomScreenOut);
 
   // ─── Load first game on init ───
   const first = document.querySelector('.cartridge[data-index="0"]');
@@ -1033,5 +1107,7 @@
   }
 })();
 </script>
+<div id="zoomOverlay" class="zoom-overlay"></div>
+<button id="backBtn" class="back-btn">&#8592; BACK</button>
 </body>
 </html>
