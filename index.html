@@ -54,7 +54,8 @@
   /* ─── GAMEBOY BODY ─── */
   .gameboy {
     position: relative;
-    height: 90vh;
+    height: 80vh;
+    max-width: 80vw;
     aspect-ratio: 220 / 420;
     flex-shrink: 0;
     /* DMG shape: rounded top, angled bottom-left */
@@ -573,7 +574,6 @@
 
   /* ─── RESPONSIVE ─── */
   @media (max-height: 700px) {
-    .gameboy { max-width: 240px; }
     .btn-ab { width: 18px; height: 18px; }
     .dpad { width: 46px; height: 46px; }
   }
@@ -595,8 +595,6 @@
   }
 
   @media (min-width: 601px) {
-    .gameboy { max-width: 260px; }
-    /* scale everything down so it fits in viewport height */
     @supports (height: 100dvh) {
       .scene { height: 100dvh; }
     }
@@ -604,7 +602,6 @@
 
   /* keep gameboy fitting vertically */
   @media (max-height: 620px) and (min-width: 601px) {
-    .gameboy { max-width: 220px; }
     .screen-bezel { padding: 8px 8px 10px; }
     .controls { margin-bottom: 6px; }
     .gb-brand { margin-bottom: 4px; }
@@ -923,6 +920,7 @@
 
   function flyCartIntoSlot(cart, callback) {
     const flyer = createCartridgeFlyer(cart);
+    cart.style.visibility = 'hidden';
     const fromRect = cart.getBoundingClientRect();
     const target = getSlotTarget(fromRect);
     const dx = target.left - fromRect.left;
@@ -934,6 +932,7 @@
       if (!finished) {
         finished = true;
         flyer.remove();
+        cart.style.visibility = 'visible';
         if (callback) callback();
       }
     };
