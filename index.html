@@ -927,6 +927,7 @@
     const target = getSlotTarget(fromRect);
     const dx = target.left - fromRect.left;
     const dy = target.top - fromRect.top;
+    const arcHeight = Math.min(-80, dy / 2 - 80);
 
     let finished = false;
     const cleanup = () => {
@@ -937,13 +938,18 @@
       }
     };
 
-    flyer.addEventListener('transitionend', cleanup, { once: true });
-    setTimeout(cleanup, 900);
-
-    requestAnimationFrame(() => {
-      flyer.style.transform = `translate(${dx}px, ${dy}px) scale(0.9)`;
-      flyer.style.opacity = '0';
+    const animation = flyer.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.45}px, ${dy * 0.45 + arcHeight}px) scale(0.95)`, opacity: 0.85 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0.9)`, opacity: 0 }
+    ], {
+      duration: 700,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      fill: 'forwards'
     });
+
+    animation.onfinish = cleanup;
+    setTimeout(cleanup, 900);
   }
 
   // ─── Screen flicker ───
@@ -987,21 +993,10 @@
     if (!url) return;
 
     const idx = cart.dataset.index;
-    const selectedIndex = document.querySelector('.cartridge.selected')?.dataset.index;
-
-    if (selectedIndex === idx) {
-      return;
-    }
-
     const allCarts = document.querySelectorAll('.cartridge');
     allCarts.forEach(c => {
-      if (c.dataset.index === idx) {
-        c.classList.add('selected');
-        c.style.visibility = 'hidden';
-      } else {
-        c.classList.remove('selected');
-        c.style.visibility = 'visible';
-      }
+      c.classList.toggle('selected', c.dataset.index === idx);
+      c.style.visibility = 'visible';
     });
 
     playClickSound();
