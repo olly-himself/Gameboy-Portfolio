@@ -981,66 +981,56 @@
 
   // ─── Screen zoom ───
   let activeCart = null;
-  let screenNaturalRect = null;
   let locked = false;
 
   function zoomScreenIn() {
+    const gameboy = document.getElementById('gameboy');
     const wrap = document.getElementById('screenWrap');
     const overlay = document.getElementById('zoomOverlay');
     const backBtn = document.getElementById('backBtn');
 
-    const rect = wrap.getBoundingClientRect();
-    screenNaturalRect = rect;
+    const gbRect = gameboy.getBoundingClientRect();
+    const screenRect = wrap.getBoundingClientRect();
 
-    const vmin = Math.min(window.innerWidth, window.innerHeight);
-    const toSize = vmin * 0.9;
-    const toX = (window.innerWidth - toSize) / 2;
-    const toY = (window.innerHeight - toSize) / 2;
+    const screenCX = screenRect.left + screenRect.width / 2;
+    const screenCY = screenRect.top + screenRect.height / 2;
 
-    wrap.style.cssText = `
-      position: fixed;
-      left: ${rect.left}px;
-      top: ${rect.top}px;
-      width: ${rect.width}px;
-      height: ${rect.height}px;
-      z-index: 1000;
-      border-radius: 4px;
-      overflow: hidden;
-      transition: none;
-    `;
+    const scale = Math.min(
+      (window.innerWidth * 0.9) / screenRect.width,
+      (window.innerHeight * 0.9) / screenRect.height
+    );
+
+    const tx = window.innerWidth / 2 - screenCX;
+    const ty = window.innerHeight / 2 - screenCY;
+
+    gameboy.style.transformOrigin = `${screenCX - gbRect.left}px ${screenCY - gbRect.top}px`;
+    gameboy.style.transition = 'none';
+    gameboy.style.zIndex = '1000';
 
     overlay.classList.add('active');
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      wrap.style.transition = 'left 0.7s cubic-bezier(0.4,0,0.2,1), top 0.7s cubic-bezier(0.4,0,0.2,1), width 0.7s cubic-bezier(0.4,0,0.2,1), height 0.7s cubic-bezier(0.4,0,0.2,1)';
-      wrap.style.left = `${toX}px`;
-      wrap.style.top = `${toY}px`;
-      wrap.style.width = `${toSize}px`;
-      wrap.style.height = `${toSize}px`;
+      gameboy.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
+      gameboy.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       setTimeout(() => backBtn.classList.add('visible'), 600);
     }));
   }
 
   function zoomScreenOut() {
-    const wrap = document.getElementById('screenWrap');
+    const gameboy = document.getElementById('gameboy');
     const overlay = document.getElementById('zoomOverlay');
     const backBtn = document.getElementById('backBtn');
 
     backBtn.classList.remove('visible');
     overlay.classList.remove('active');
 
-    const rect = screenNaturalRect;
-    if (rect) {
-      wrap.style.transition = 'left 0.6s cubic-bezier(0.4,0,0.2,1), top 0.6s cubic-bezier(0.4,0,0.2,1), width 0.6s cubic-bezier(0.4,0,0.2,1), height 0.6s cubic-bezier(0.4,0,0.2,1)';
-      wrap.style.left = `${rect.left}px`;
-      wrap.style.top = `${rect.top}px`;
-      wrap.style.width = `${rect.width}px`;
-      wrap.style.height = `${rect.height}px`;
-    }
+    gameboy.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)';
+    gameboy.style.transform = '';
 
     setTimeout(() => {
-      wrap.style.cssText = '';
-      screenNaturalRect = null;
+      gameboy.style.transition = '';
+      gameboy.style.transformOrigin = '';
+      gameboy.style.zIndex = '';
       locked = false;
 
       const iframe = document.getElementById('gameScreen');
