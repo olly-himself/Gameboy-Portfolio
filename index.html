@@ -979,6 +979,7 @@
   // ─── Screen zoom ───
   let activeCart = null;
   let screenNaturalRect = null;
+  let locked = false;
 
   function zoomScreenIn() {
     const wrap = document.getElementById('screenWrap');
@@ -1037,6 +1038,7 @@
     setTimeout(() => {
       wrap.style.cssText = '';
       screenNaturalRect = null;
+      locked = false;
 
       const iframe = document.getElementById('gameScreen');
       iframe.classList.remove('loaded');
@@ -1056,10 +1058,12 @@
 
   // ─── Cartridge click ───
   function handleCartridgeClick(cart) {
+    if (locked) return;
     const rawUrl = cart.dataset.url;
     const url = resolveGameUrl(rawUrl);
     if (!url) return;
 
+    locked = true;
     const idx = cart.dataset.index;
     document.querySelectorAll('.cartridge').forEach(c => {
       c.classList.toggle('selected', c.dataset.index === idx);
@@ -1069,12 +1073,8 @@
     activeCart = cart;
     playClickSound();
     flyCartIntoSlot(cart, () => {
-      setTimeout(() => {
-        bootFlicker(() => {
-          loadGame(url);
-          setTimeout(zoomScreenIn, 300);
-        });
-      }, 50);
+      zoomScreenIn();
+      bootFlicker(() => loadGame(url));
     });
   }
 
