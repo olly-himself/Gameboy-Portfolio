@@ -1115,13 +1115,6 @@
 
   document.getElementById('backBtn').addEventListener('click', zoomScreenOut);
 
-  // ─── Load first game on init ───
-  const first = document.querySelector('.cartridge[data-index="0"]');
-  if (first) {
-    setTimeout(() => {
-      bootFlicker(() => loadGame(resolveGameUrl(first.dataset.url)));
-    }, 600);
-  }
 
   // ─── Keyboard button feedback ───
   const keyMap = {
