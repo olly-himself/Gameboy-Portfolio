@@ -1071,7 +1071,7 @@
   let activeCart = null;
   let locked = false;
 
-  function zoomScreenIn() {
+  function zoomScreenIn(showLoading = true) {
     const gameboy = document.getElementById('gameboy');
     const wrap = document.getElementById('screenWrap');
     const overlay = document.getElementById('zoomOverlay');
@@ -1096,13 +1096,21 @@
     gameboy.style.zIndex = '1000';
 
     overlay.classList.add('active');
-    document.getElementById('loadingScreen').classList.add('visible');
+    if (showLoading) document.getElementById('loadingScreen').classList.add('visible');
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
       gameboy.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
       gameboy.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
       setTimeout(() => backBtn.classList.add('visible'), 600);
     }));
+  }
+
+  function unloadGame() {
+    const iframe = document.getElementById('gameScreen');
+    iframe.classList.remove('loaded');
+    iframe.src = 'about:blank';
+    document.getElementById('screenWrap').classList.remove('active');
+    document.getElementById('loadingScreen').classList.remove('visible');
   }
 
   function zoomScreenOut() {
@@ -1122,17 +1130,7 @@
       gameboy.style.zIndex = '';
       locked = false;
 
-      const iframe = document.getElementById('gameScreen');
-      iframe.classList.remove('loaded');
-      iframe.src = 'about:blank';
-      document.getElementById('screenWrap').classList.remove('active');
-      document.getElementById('loadingScreen').classList.remove('visible');
-
-      if (activeCart) {
-        activeCart.style.visibility = 'visible';
-        activeCart.classList.remove('selected');
-        activeCart = null;
-      }
+      if (activeCart) activeCart.style.visibility = 'visible';
       document.querySelectorAll('.cartridge').forEach(c => {
         c.style.visibility = 'visible';
       });
@@ -1147,6 +1145,21 @@
     if (!url) return;
 
     locked = true;
+
+    // Same cart clicked while game is loaded — just zoom back in
+    if (cart === activeCart) {
+      playClickSound();
+      zoomScreenIn(false);
+      return;
+    }
+
+    // Switching to a different cart — clear whatever is loaded
+    if (activeCart) {
+      unloadGame();
+      activeCart.style.visibility = 'visible';
+      activeCart.classList.remove('selected');
+    }
+
     const idx = cart.dataset.index;
     document.querySelectorAll('.cartridge').forEach(c => {
       c.classList.toggle('selected', c.dataset.index === idx);
