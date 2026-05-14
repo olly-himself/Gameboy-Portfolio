@@ -601,6 +601,29 @@
     overflow: hidden;
   }
   #loadingScreen.visible { opacity: 1; }
+
+  /* ─── RESUME BUTTON ─── */
+  #resumeBtn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    z-index: 6;
+    background: rgba(0,180,0,0.12);
+    color: #5aab5a;
+    border: 1px solid rgba(90,171,90,0.35);
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 5px;
+    letter-spacing: 1px;
+    padding: 2px 5px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background 0.15s ease;
+    white-space: nowrap;
+  }
+  #resumeBtn.visible { opacity: 1; pointer-events: auto; }
+  #resumeBtn:hover { background: rgba(0,180,0,0.25); color: #7acc7a; }
   #loadingScreen::after {
     content: '';
     position: absolute;
@@ -703,6 +726,7 @@
           <div class="loading-label">NOW LOADING</div>
           <div class="loading-bar"><div class="loading-bar-fill"></div></div>
         </div>
+        <button id="resumeBtn">&#9654; RESUME</button>
         <div class="flicker-overlay" id="flickerOverlay"></div>
       </div>
     </div>
@@ -1096,6 +1120,7 @@
     gameboy.style.zIndex = '1000';
 
     overlay.classList.add('active');
+    document.getElementById('resumeBtn').classList.remove('visible');
     if (showLoading) document.getElementById('loadingScreen').classList.add('visible');
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1111,6 +1136,7 @@
     iframe.src = 'about:blank';
     document.getElementById('screenWrap').classList.remove('active');
     document.getElementById('loadingScreen').classList.remove('visible');
+    document.getElementById('resumeBtn').classList.remove('visible');
   }
 
   function zoomScreenOut() {
@@ -1134,6 +1160,7 @@
       document.querySelectorAll('.cartridge').forEach(c => {
         c.style.visibility = 'visible';
       });
+      document.getElementById('resumeBtn').classList.add('visible');
     }, 650);
   }
 
@@ -1186,6 +1213,9 @@
   });
 
   document.getElementById('backBtn').addEventListener('click', zoomScreenOut);
+  document.getElementById('resumeBtn').addEventListener('click', () => {
+    if (!locked && activeCart) { locked = true; zoomScreenIn(false); }
+  });
 
 
   // ─── Keyboard button feedback ───
