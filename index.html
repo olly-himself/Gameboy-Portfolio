@@ -555,38 +555,97 @@
   .cart-carousel::-webkit-scrollbar { display: none; }
 
   /* ─── RESPONSIVE ─── */
+
+  /* Short screens — shrink controls */
   @media (max-height: 700px) {
     .btn-ab { width: 18px; height: 18px; }
-    .dpad { width: 46px; height: 46px; }
+    .dpad   { width: 46px; height: 46px; }
   }
 
-  @media (max-width: 600px) {
-    .scene {
-      flex-direction: column;
-      gap: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      height: auto;
-      min-height: 100vh;
-      padding: 16px 8px 0;
-    }
-    html, body { overflow: auto; }
-    .cart-panel { display: none; }
-    .cart-carousel { display: flex; }
-    .gameboy { max-width: 90vw; }
-  }
-
+  /* Tablet & desktop — use dynamic viewport height */
   @media (min-width: 601px) {
-    @supports (height: 100dvh) {
-      .scene { height: 100dvh; }
-    }
+    @supports (height: 100dvh) { .scene { height: 100dvh; } }
   }
 
-  /* keep gameboy fitting vertically */
+  /* Short desktop / landscape tablet */
   @media (max-height: 620px) and (min-width: 601px) {
     .screen-bezel { padding: 8px 8px 10px; }
     .controls { margin-bottom: 6px; }
     .gb-brand { margin-bottom: 4px; }
+  }
+
+  /* Tablet portrait & small desktop (601–1024px) */
+  @media (min-width: 601px) and (max-width: 1024px) {
+    .scene   { gap: 16px; }
+    .gameboy { height: 76vh; }
+  }
+
+  /* ─── Mobile portrait ─── */
+  @media (max-width: 600px) {
+    html, body { overflow-y: auto; overflow-x: hidden; }
+
+    .scene {
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      height: auto;
+      min-height: 100svh;
+      padding: 56px 8px 80px;
+    }
+
+    .cart-panel    { display: none; }
+    .cart-carousel { display: flex; }
+
+    .gameboy {
+      height: auto;
+      max-height: 60svh;
+      max-width: 75vw;
+    }
+
+    .portfolio-header {
+      font-size: 7px;
+      letter-spacing: 2px;
+      top: 10px;
+    }
+
+    .portfolio-footer {
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 7px;
+      letter-spacing: 1px;
+      bottom: 10px;
+    }
+    .portfolio-footer .sep { display: none; }
+
+    .back-btn {
+      font-size: 11px;
+      padding: 8px 18px;
+      bottom: max(3vh, 16px);
+    }
+  }
+
+  /* ─── Landscape phone (wide, short) ─── */
+  @media (max-width: 900px) and (max-height: 500px) {
+    html, body { overflow: hidden; }
+
+    .scene {
+      flex-direction: row;
+      gap: 16px;
+      padding: 8px 12px;
+      height: 100svh;
+    }
+
+    .gameboy {
+      height: 88svh;
+      max-width: 44vw;
+    }
+
+    .cart-panel    { display: flex; }
+    .cart-carousel { display: none; }
+
+    .portfolio-header,
+    .portfolio-footer { display: none; }
   }
 
   /* ─── LOADING SCREEN ─── */
