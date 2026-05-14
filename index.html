@@ -584,6 +584,56 @@
     .gb-brand { margin-bottom: 4px; }
   }
 
+  /* ─── LOADING SCREEN ─── */
+  #loadingScreen {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: var(--gb-screen-idle);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+  }
+  #loadingScreen.visible { opacity: 1; }
+  #loadingScreen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px
+    );
+    pointer-events: none;
+  }
+  .loading-label {
+    font-family: monospace;
+    font-size: 7px;
+    color: #5aab5a;
+    letter-spacing: 2px;
+  }
+  .loading-bar {
+    width: 40px;
+    height: 3px;
+    background: rgba(90,171,90,0.15);
+    overflow: hidden;
+  }
+  .loading-bar-fill {
+    height: 100%;
+    width: 35%;
+    background: #5aab5a;
+    animation: gbBar 1.4s ease-in-out infinite;
+  }
+  @keyframes gbBar {
+    0%   { transform: translateX(-200%); }
+    100% { transform: translateX(400%); }
+  }
+
   /* ─── ZOOM OVERLAY ─── */
   .zoom-overlay {
     position: fixed;
@@ -649,6 +699,10 @@
           title="Game Screen"
           aria-label="Game content">
         </iframe>
+        <div id="loadingScreen">
+          <div class="loading-label">NOW LOADING</div>
+          <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+        </div>
         <div class="flicker-overlay" id="flickerOverlay"></div>
       </div>
     </div>
@@ -998,9 +1052,12 @@
     iframe.classList.remove('loaded');
     setTimeout(() => {
       iframe.src = url;
-      iframe.onload = () => iframe.classList.add('loaded');
-      // Fallback for about:blank or same-origin
-      setTimeout(() => iframe.classList.add('loaded'), 800);
+      const onLoaded = () => {
+        iframe.classList.add('loaded');
+        document.getElementById('loadingScreen').classList.remove('visible');
+      };
+      iframe.onload = onLoaded;
+      setTimeout(onLoaded, 8000);
     }, 200);
   }
 
@@ -1039,6 +1096,7 @@
     gameboy.style.zIndex = '1000';
 
     overlay.classList.add('active');
+    document.getElementById('loadingScreen').classList.add('visible');
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
       gameboy.style.transition = 'transform 0.7s cubic-bezier(0.4,0,0.2,1)';
@@ -1068,6 +1126,7 @@
       iframe.classList.remove('loaded');
       iframe.src = 'about:blank';
       document.getElementById('screenWrap').classList.remove('active');
+      document.getElementById('loadingScreen').classList.remove('visible');
 
       if (activeCart) {
         activeCart.style.visibility = 'visible';
