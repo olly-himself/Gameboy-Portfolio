@@ -1314,12 +1314,12 @@
           const dx = x - ox;
           const r  = Math.sqrt(dx * dx + dy2);
           const a  = Math.atan2(dy, dx);
-          const spiral = Math.sin(a * 4  + r * 0.20 - t * 1.6) * .5 + .5;
-          const pulse  = Math.sin(r * 0.13 - t * 2.5)          * .5 + .5;
-          const wave   = Math.sin(a * 2.0 + r * 0.07 + t * .5) * .5 + .5;
+          const spiral = Math.sin(a * 4  + r * 0.20 - t * 1.28) * .5 + .5;
+          const pulse  = Math.sin(r * 0.13 - t * 2.0)          * .5 + .5;
+          const wave   = Math.sin(a * 2.0 + r * 0.07 + t * .4) * .5 + .5;
           const v   = spiral * .6 + pulse * .25 + wave * .15;
-          const hue = (0.62 + wave * 0.20 + spiral * 0.10 + t * .010) % 1;
-          const [ri, gi, bi] = hsl(hue, .7 + v * .25, .05 + v * .20);
+          const hue = (0.62 + wave * 0.20 + spiral * 0.10 + t * .008) % 1;
+          const [ri, gi, bi] = hsl(hue, .7 + v * .25, .025 + v * .10);
           const i = (y * W + x) * 4;
           d[i] = ri; d[i+1] = gi; d[i+2] = bi; d[i+3] = 255;
         }
