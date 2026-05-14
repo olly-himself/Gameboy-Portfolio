@@ -1105,56 +1105,76 @@
     flyer.classList.remove('selected', 'ejecting', 'inserting');
     document.body.appendChild(flyer);
     const rect = cart.getBoundingClientRect();
-    flyer.style.width = `${rect.width}px`;
-    flyer.style.height = `${rect.height}px`;
-    flyer.style.left = `${rect.left}px`;
-    flyer.style.top = `${rect.top}px`;
+    flyer.style.width   = `${rect.width}px`;
+    flyer.style.height  = `${rect.height}px`;
+    flyer.style.left    = `${rect.left}px`;
+    flyer.style.top     = `${rect.top}px`;
     flyer.style.opacity = '1';
-    flyer.style.transform = 'translate(0, 0) scale(1)';
-    flyer.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease';
     return flyer;
   }
 
-  function getSlotTarget(flyerRect) {
-    const slot = document.querySelector('.cart-slot');
-    const rect = slot.getBoundingClientRect();
-    return {
-      left: rect.left + (rect.width - flyerRect.width) / 2,
-      top: rect.top + (rect.height - flyerRect.height) / 2
-    };
-  }
-
   function flyCartIntoSlot(cart, callback) {
-    const flyer = createCartridgeFlyer(cart);
+    const flyer    = createCartridgeFlyer(cart);
     cart.style.visibility = 'hidden';
-    const fromRect = cart.getBoundingClientRect();
-    const target = getSlotTarget(fromRect);
-    const dx = target.left - fromRect.left;
-    const dy = target.top - fromRect.top;
-    const arcHeight = Math.min(-80, dy / 2 - 80);
 
-    let finished = false;
+    const from     = cart.getBoundingClientRect();
+    const slotRect = document.querySelector('.cart-slot').getBoundingClientRect();
+
+    // Start: current position of the flyer (viewport coords)
+    const sx = from.left;
+    const sy = from.top;
+
+    // End: centred over the slot entrance (top edge of slot)
+    const ex = slotRect.left + (slotRect.width  - from.width)  / 2;
+    const ey = slotRect.top;
+
+    const dist = Math.hypot(ex - sx, ey - sy);
+    const lift = Math.max(90, dist * 0.32);
+
+    // Cubic bezier control points:
+    //   CP1 — rise up and begin drifting toward the gameboy
+    //   CP2 — arrive directly above the slot, so the final descent is vertical
+    const cp1x = sx + (ex - sx) * 0.18;
+    const cp1y = sy - lift;
+    const cp2x = ex;
+    const cp2y = ey - lift * 0.55;
+
+    const duration = 880;
+    const t0 = performance.now();
+    let done = false;
+
     const cleanup = () => {
-      if (!finished) {
-        finished = true;
+      if (!done) {
+        done = true;
         flyer.remove();
         cart.style.visibility = 'visible';
         if (callback) callback();
       }
     };
 
-    const animation = flyer.animate([
-      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-      { transform: `translate(${dx * 0.45}px, ${dy * 0.45 + arcHeight}px) scale(0.95)`, opacity: 0.85 },
-      { transform: `translate(${dx}px, ${dy}px) scale(0.9)`, opacity: 0 }
-    ], {
-      duration: 700,
-      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-      fill: 'forwards'
-    });
+    // Cubic bezier
+    const bez = (t, a, b, c, d) =>
+      (1-t)**3*a + 3*(1-t)**2*t*b + 3*(1-t)*t**2*c + t**3*d;
 
-    animation.onfinish = cleanup;
-    setTimeout(cleanup, 900);
+    // Ease-in-out cubic
+    const ease = t => t < 0.5 ? 4*t*t*t : 1 - (-2*t+2)**3/2;
+
+    const tick = now => {
+      if (done) return;
+      const raw = Math.min((now - t0) / duration, 1);
+      const t   = ease(raw);
+
+      flyer.style.left    = `${bez(t, sx, cp1x, cp2x, ex)}px`;
+      flyer.style.top     = `${bez(t, sy, cp1y, cp2y, ey)}px`;
+      // Stay fully visible until the last 15%, then vanish at the slot entrance
+      flyer.style.opacity = raw > 0.85 ? `${1 - (raw - 0.85) / 0.15}` : '1';
+
+      if (raw < 1) requestAnimationFrame(tick);
+      else cleanup();
+    };
+
+    requestAnimationFrame(tick);
+    setTimeout(cleanup, duration + 200);
   }
 
   // ─── Screen flicker ───
