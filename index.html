@@ -1135,9 +1135,9 @@
     //   CP1 — rise up and begin drifting toward the gameboy
     //   CP2 — arrive directly above the slot, so the final descent is vertical
     const cp1x = sx + (ex - sx) * 0.18;
-    const cp1y = sy - lift;
+    const cp1y = sy + lift;
     const cp2x = ex;
-    const cp2y = ey - lift * 0.55;
+    const cp2y = ey + lift * 0.55;
 
     const duration = 880;
     const t0 = performance.now();
