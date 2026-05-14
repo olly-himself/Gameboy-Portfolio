@@ -657,6 +657,37 @@
     100% { transform: translateX(400%); }
   }
 
+  /* ─── PORTFOLIO HEADER / FOOTER ─── */
+  .portfolio-header,
+  .portfolio-footer {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: monospace;
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.28);
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+    text-transform: uppercase;
+  }
+  .portfolio-header { top: 18px; }
+  .portfolio-footer {
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+  }
+  .portfolio-footer a {
+    color: rgba(255,255,255,0.28);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .portfolio-footer a:hover { color: rgba(255,255,255,0.7); }
+  .portfolio-footer .sep { opacity: 0.35; }
+
   /* ─── ZOOM OVERLAY ─── */
   .zoom-overlay {
     position: fixed;
@@ -886,6 +917,14 @@
   </div>
 </div>
 
+<div class="portfolio-header">Olly's Portfolio</div>
+<div class="portfolio-footer">
+  <span>Oliver Lewis</span>
+  <span class="sep">·</span>
+  <a href="mailto:olewis920@gmail.com">olewis920@gmail.com</a>
+  <span class="sep">·</span>
+  <a href="https://www.linkedin.com/in/olly-lewis/" target="_blank" rel="noopener">linkedin.com/in/olly-lewis</a>
+</div>
 <div id="zoomOverlay" class="zoom-overlay"></div>
 <button id="backBtn" class="back-btn">&#8592; BACK</button>
 
