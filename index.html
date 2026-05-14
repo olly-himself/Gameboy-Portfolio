@@ -311,7 +311,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
     flex: 1;
   }
 
@@ -329,7 +329,34 @@
     transition: transform 80ms;
   }
 
-  .btn-startsel:active { transform: rotate(-10deg) translateY(1px); }
+  .btn-startsel:active,
+  .btn-startsel.pressed { transform: rotate(-10deg) translateY(1px); filter: brightness(1.4); }
+
+  .btn-ab:active,
+  .btn-ab.pressed {
+    transform: translateY(1px);
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset 0 2px 4px rgba(0,0,0,0.5);
+    filter: brightness(1.3);
+  }
+
+  /* ─── DPAD DIRECTION HIGHLIGHTS ─── */
+  .dpad-press {
+    position: absolute;
+    background: rgba(255,255,255,0.22);
+    border-radius: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 60ms;
+    z-index: 2;
+  }
+  .dpad-press.active { opacity: 1; }
+  .dpad-press-up    { top: 0;    left: 33.3%; width: 33.4%; height: 33.3%; border-radius: 2px 2px 0 0; }
+  .dpad-press-down  { bottom: 0; left: 33.3%; width: 33.4%; height: 33.3%; border-radius: 0 0 2px 2px; }
+  .dpad-press-left  { left: 0;   top: 33.3%;  width: 33.3%; height: 33.4%; border-radius: 2px 0 0 2px; }
+  .dpad-press-right { right: 0;  top: 33.3%;  width: 33.3%; height: 33.4%; border-radius: 0 2px 2px 0; }
 
   .btn-startsel .btn-label {
     position: absolute;
@@ -633,6 +660,10 @@
         <div class="dpad-h"></div>
         <div class="dpad-v"></div>
         <div class="dpad-center"></div>
+        <div class="dpad-press dpad-press-up"    id="dpadUp"></div>
+        <div class="dpad-press dpad-press-down"  id="dpadDown"></div>
+        <div class="dpad-press dpad-press-left"  id="dpadLeft"></div>
+        <div class="dpad-press dpad-press-right" id="dpadRight"></div>
       </div>
 
       <!-- Start/Select -->
@@ -648,8 +679,8 @@
       <!-- A/B Buttons -->
       <div class="ab-buttons" aria-hidden="true">
         <div class="ab-row">
-          <div class="btn-ab"><span class="btn-label">B</span></div>
-          <div class="btn-ab"><span class="btn-label">A</span></div>
+          <div class="btn-ab" id="btnB"><span class="btn-label">B</span></div>
+          <div class="btn-ab" id="btnA"><span class="btn-label">A</span></div>
         </div>
       </div>
     </div>
@@ -1091,6 +1122,27 @@
       bootFlicker(() => loadGame(resolveGameUrl(first.dataset.url)));
     }, 600);
   }
+
+  // ─── Keyboard button feedback ───
+  const keyMap = {
+    ArrowUp:    () => document.getElementById('dpadUp'),
+    ArrowDown:  () => document.getElementById('dpadDown'),
+    ArrowLeft:  () => document.getElementById('dpadLeft'),
+    ArrowRight: () => document.getElementById('dpadRight'),
+    x:          () => document.getElementById('btnA'),
+    X:          () => document.getElementById('btnA'),
+    z:          () => document.getElementById('btnB'),
+    Z:          () => document.getElementById('btnB'),
+  };
+
+  document.addEventListener('keydown', e => {
+    const el = keyMap[e.key]?.();
+    if (el) el.classList.add('active', 'pressed');
+  });
+  document.addEventListener('keyup', e => {
+    const el = keyMap[e.key]?.();
+    if (el) el.classList.remove('active', 'pressed');
+  });
 
   // ─── Prefers reduced motion ───
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
