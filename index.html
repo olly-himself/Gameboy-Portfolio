@@ -1126,7 +1126,7 @@
 
     // End: centred horizontally on slot, vertically so cart centre meets slot entrance
     const ex = slotRect.left + (slotRect.width  - from.width)  / 2;
-    const ey = slotRect.top - from.height * 0.5;
+    const ey = slotRect.top - from.height * 1.5;
 
     const dist = Math.hypot(ex - sx, ey - sy);
     const lift = Math.max(90, dist * 0.32);
