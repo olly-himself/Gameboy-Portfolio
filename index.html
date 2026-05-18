@@ -56,6 +56,16 @@
     padding: 12px;
   }
 
+  /* ─── 3D PERSPECTIVE STAGE ─── */
+  .gb-scene {
+    perspective: 1000px;
+    perspective-origin: 50% 42%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   /* ─── GAMEBOY BODY ─── */
   .gameboy {
     position: relative;
@@ -63,6 +73,9 @@
     max-width: 80vw;
     aspect-ratio: 220 / 420;
     flex-shrink: 0;
+    transform-style: preserve-3d;
+    transform: rotateY(-12deg) rotateX(3deg);
+    animation: gbRotateIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
     /* DMG shape: rounded top, angled bottom-left */
     background: linear-gradient(160deg,
       #3a3a3c 0%,
@@ -121,6 +134,41 @@
   @keyframes ledPulse {
     0%, 100% { box-shadow: 0 0 6px 2px rgba(255,34,0,0.7), 0 0 12px 4px rgba(255,34,0,0.3); }
     50% { box-shadow: 0 0 10px 4px rgba(255,34,0,0.95), 0 0 20px 8px rgba(255,34,0,0.5); }
+  }
+
+  @keyframes gbRotateIn {
+    from {
+      transform: rotateY(-70deg) rotateX(8deg);
+      opacity: 0.4;
+    }
+    to {
+      transform: rotateY(-12deg) rotateX(3deg);
+      opacity: 1;
+    }
+  }
+
+  /* ─── GAMEBOY LEFT SIDE FACE ─── */
+  .gb-side-face {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 18px;
+    height: 100%;
+    background: linear-gradient(180deg,
+      #232325 0%,
+      #1a1a1c 15%,
+      #141416 50%,
+      #0e0e10 80%,
+      #0a0a0c 100%
+    );
+    border-radius: 18px 0 0 36px;
+    transform-origin: right center;
+    transform: rotateY(-90deg);
+    box-shadow:
+      inset 2px 0 6px rgba(255,255,255,0.03),
+      inset -3px 0 10px rgba(0,0,0,0.7);
+    pointer-events: none;
+    backface-visibility: hidden;
   }
 
   /* ─── SCREEN BEZEL ─── */
@@ -600,6 +648,8 @@
       height: auto;
       max-height: 60svh;
       max-width: 75vw;
+      animation: none;
+      transform: none;
     }
 
     .portfolio-header {
@@ -639,6 +689,8 @@
     .gameboy {
       height: 88svh;
       max-width: 44vw;
+      animation: none;
+      transform: rotateY(-6deg) rotateX(1deg);
     }
 
     .cart-panel    { display: flex; }
@@ -799,6 +851,7 @@
 <div class="scene">
 
   <!-- ═══ GAMEBOY ═══ -->
+  <div class="gb-scene">
   <div class="gameboy" id="gameboy">
 
     <!-- Top bar: brand + LED -->
@@ -875,8 +928,13 @@
       <span class="cart-slot-label">INSERT CARTRIDGE</span>
     </div>
 
+    <!-- 3D side face -->
+    <div class="gb-side-face" aria-hidden="true"></div>
+
   </div>
   <!-- end .gameboy -->
+  </div>
+  <!-- end .gb-scene -->
 
   <!-- ═══ CARTRIDGE PANEL (desktop) ═══ -->
   <div class="cart-panel" role="list" aria-label="Game cartridges">
@@ -1416,6 +1474,11 @@
     document.documentElement.style.setProperty('--anim', '0ms');
     const led = document.querySelector('.power-led');
     if (led) led.style.animation = 'none';
+    const gb = document.getElementById('gameboy');
+    if (gb) {
+      gb.style.animation = 'none';
+      gb.style.transform = 'rotateY(-12deg) rotateX(3deg)';
+    }
   }
 })();
 </script>
