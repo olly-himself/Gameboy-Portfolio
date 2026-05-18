@@ -1319,7 +1319,7 @@
 
     gameboy.style.transformOrigin = `${screenCX - gbRect.left}px ${screenCY - gbRect.top}px`;
     gameboy.style.transition = 'none';
-    gameboy.style.zIndex = '1000';
+    document.querySelector('.gb-scene').style.zIndex = '1001';
 
     overlay.classList.add('active');
     document.querySelector('.cart-panel').style.opacity = '0';
@@ -1359,7 +1359,8 @@
     setTimeout(() => {
       gameboy.style.transition = '';
       gameboy.style.transformOrigin = '';
-      gameboy.style.zIndex = '';
+      gameboy.style.transformStyle = '';
+      document.querySelector('.gb-scene').style.zIndex = '';
       locked = false;
       if (window._gb3D) window._gb3D.enable();
 
