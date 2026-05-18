@@ -74,8 +74,6 @@
     aspect-ratio: 220 / 420;
     flex-shrink: 0;
     transform-style: preserve-3d;
-    transform: rotateY(-12deg) rotateX(3deg);
-    animation: gbRotateIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
     /* DMG shape: rounded top, angled bottom-left */
     background: linear-gradient(160deg,
       #3a3a3c 0%,
@@ -134,17 +132,6 @@
   @keyframes ledPulse {
     0%, 100% { box-shadow: 0 0 6px 2px rgba(255,34,0,0.7), 0 0 12px 4px rgba(255,34,0,0.3); }
     50% { box-shadow: 0 0 10px 4px rgba(255,34,0,0.95), 0 0 20px 8px rgba(255,34,0,0.5); }
-  }
-
-  @keyframes gbRotateIn {
-    from {
-      transform: rotateY(-70deg) rotateX(8deg);
-      opacity: 0.4;
-    }
-    to {
-      transform: rotateY(-12deg) rotateX(3deg);
-      opacity: 1;
-    }
   }
 
   /* ─── GAMEBOY LEFT SIDE FACE ─── */
@@ -648,8 +635,6 @@
       height: auto;
       max-height: 60svh;
       max-width: 75vw;
-      animation: none;
-      transform: none;
     }
 
     .portfolio-header {
@@ -689,8 +674,6 @@
     .gameboy {
       height: 88svh;
       max-width: 44vw;
-      animation: none;
-      transform: rotateY(-6deg) rotateX(1deg);
     }
 
     .cart-panel    { display: flex; }
@@ -1297,6 +1280,8 @@
     const tx = window.innerWidth / 2 - screenCX;
     const ty = window.innerHeight / 2 - screenCY;
 
+    if (window._gb3D) window._gb3D.disable();
+
     gameboy.style.transformOrigin = `${screenCX - gbRect.left}px ${screenCY - gbRect.top}px`;
     gameboy.style.transition = 'none';
     gameboy.style.zIndex = '1000';
@@ -1330,13 +1315,14 @@
     overlay.classList.remove('active');
 
     gameboy.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)';
-    gameboy.style.transform = '';
+    gameboy.style.transform = window._gb3D ? window._gb3D.getTransform() : '';
 
     setTimeout(() => {
       gameboy.style.transition = '';
       gameboy.style.transformOrigin = '';
       gameboy.style.zIndex = '';
       locked = false;
+      if (window._gb3D) window._gb3D.enable();
 
       if (activeCart) activeCart.style.visibility = 'visible';
       document.querySelectorAll('.cartridge').forEach(c => {
@@ -1469,15 +1455,70 @@
     frame();
   }());
 
+  // ─── 3D Mouse Tilt ───
+  (function () {
+    const gb = document.getElementById('gameboy');
+    const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    const restY = hasMouse ? -10 : -4;
+    const restX = hasMouse ?   3 :  1;
+
+    let targetRotY = restY;
+    let targetRotX = restX;
+    let currentRotY = -70;
+    let currentRotX =  8;
+    let trackingActive = true;
+    let rafId = null;
+
+    const MAX_Y = 12;
+    const MAX_X =  7;
+    const LERP  = 0.04;
+
+    if (hasMouse) {
+      window.addEventListener('mousemove', e => {
+        if (!trackingActive) return;
+        const nx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+        targetRotY = nx * MAX_Y;
+        targetRotX = -ny * MAX_X;
+      });
+    }
+
+    function tick() {
+      if (!trackingActive) return;
+      currentRotY += (targetRotY - currentRotY) * LERP;
+      currentRotX += (targetRotX - currentRotX) * LERP;
+      gb.style.transform = `rotateY(${currentRotY.toFixed(3)}deg) rotateX(${currentRotX.toFixed(3)}deg)`;
+      rafId = requestAnimationFrame(tick);
+    }
+
+    window._gb3D = {
+      disable() {
+        trackingActive = false;
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      },
+      enable() {
+        if (trackingActive) return;
+        trackingActive = true;
+        tick();
+      },
+      getTransform() {
+        return `rotateY(${currentRotY.toFixed(3)}deg) rotateX(${currentRotX.toFixed(3)}deg)`;
+      }
+    };
+
+    tick();
+  }());
+
   // ─── Prefers reduced motion ───
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.documentElement.style.setProperty('--anim', '0ms');
     const led = document.querySelector('.power-led');
     if (led) led.style.animation = 'none';
-    const gb = document.getElementById('gameboy');
-    if (gb) {
-      gb.style.animation = 'none';
-      gb.style.transform = 'rotateY(-12deg) rotateX(3deg)';
+    if (window._gb3D) {
+      window._gb3D.disable();
+      document.getElementById('gameboy').style.transform = 'rotateY(-10deg) rotateX(3deg)';
     }
   }
 })();
