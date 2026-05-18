@@ -142,9 +142,8 @@
   }
 
   .gb-face-left {
-    top: 0; right: 100%;
-    width: 90px; height: 100%;
-    border-radius: 18px 0 0 36px;
+    top: -40px; right: 100%;
+    width: 90px; height: calc(100% + 80px);
     transform-origin: right center;
     transform: rotateY(-90deg);
     background: linear-gradient(180deg,
@@ -153,9 +152,8 @@
   }
 
   .gb-face-right {
-    top: 0; left: 100%;
-    width: 90px; height: 100%;
-    border-radius: 0 18px 18px 0;
+    top: -40px; left: 100%;
+    width: 90px; height: calc(100% + 80px);
     transform-origin: left center;
     transform: rotateY(90deg);
     background: linear-gradient(180deg,
@@ -164,9 +162,8 @@
   }
 
   .gb-face-top {
-    bottom: 100%; left: 0;
-    width: 100%; height: 90px;
-    border-radius: 18px 18px 0 0;
+    bottom: 100%; left: -40px;
+    width: calc(100% + 80px); height: 90px;
     transform-origin: bottom center;
     transform: rotateX(90deg);
     background: linear-gradient(180deg,
@@ -175,9 +172,8 @@
   }
 
   .gb-face-bottom {
-    top: 100%; left: 0;
-    width: 100%; height: 90px;
-    border-radius: 0 0 18px 36px;
+    top: 100%; left: -40px;
+    width: calc(100% + 80px); height: 90px;
     transform-origin: top center;
     transform: rotateX(-90deg);
     background: linear-gradient(180deg,
@@ -482,6 +478,7 @@
     flex-direction: column;
     gap: 10px;
     align-items: center;
+    transition: opacity 0.4s ease;
   }
 
   .cart-panel-title {
@@ -611,6 +608,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     gap: 12px;
+    transition: opacity 0.4s ease;
     padding: 8px 16px 12px;
     width: 100%;
   }
@@ -744,7 +742,7 @@
     padding: 2px 5px;
     cursor: pointer;
     opacity: 0;
-    pointer-events: none;
+    pointer-events: none;111
     transition: opacity 0.3s ease, background 0.15s ease;
     white-space: nowrap;
   }
@@ -1313,11 +1311,14 @@
     if (window._gb3D) window._gb3D.disable();
 
     gameboy.style.transformOrigin = `${screenCX - gbRect.left}px ${screenCY - gbRect.top}px`;
-    gameboy.style.transformStyle = 'flat';
     gameboy.style.transition = 'none';
     gameboy.style.zIndex = '1000';
 
     overlay.classList.add('active');
+    document.querySelector('.cart-panel').style.opacity = '0';
+    document.querySelector('.cart-panel').style.pointerEvents = 'none';
+    document.querySelector('.cart-carousel').style.opacity = '0';
+    document.querySelector('.cart-carousel').style.pointerEvents = 'none';
     document.getElementById('resumeBtn').classList.remove('visible');
     if (showLoading) document.getElementById('loadingScreen').classList.add('visible');
 
@@ -1351,7 +1352,6 @@
     setTimeout(() => {
       gameboy.style.transition = '';
       gameboy.style.transformOrigin = '';
-      gameboy.style.transformStyle = '';
       gameboy.style.zIndex = '';
       locked = false;
       if (window._gb3D) window._gb3D.enable();
@@ -1360,6 +1360,10 @@
       document.querySelectorAll('.cartridge').forEach(c => {
         c.style.visibility = 'visible';
       });
+      document.querySelector('.cart-panel').style.opacity = '';
+      document.querySelector('.cart-panel').style.pointerEvents = '';
+      document.querySelector('.cart-carousel').style.opacity = '';
+      document.querySelector('.cart-carousel').style.pointerEvents = '';
       document.getElementById('resumeBtn').classList.add('visible');
     }, 650);
   }
