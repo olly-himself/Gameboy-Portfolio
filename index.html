@@ -746,7 +746,7 @@
     padding: 2px 5px;
     cursor: pointer;
     opacity: 0;
-    pointer-events: none;111
+    pointer-events: none;
     transition: opacity 0.3s ease, background 0.15s ease;
     white-space: nowrap;
   }
@@ -1298,6 +1298,11 @@
     const overlay = document.getElementById('zoomOverlay');
     const backBtn = document.getElementById('backBtn');
 
+    // Straighten before measuring — tilt foreshortens rects and breaks zoom
+    if (window._gb3D) window._gb3D.disable();
+    gameboy.style.transformStyle = 'flat';
+    gameboy.style.transform = 'none';
+
     const gbRect = gameboy.getBoundingClientRect();
     const screenRect = wrap.getBoundingClientRect();
 
@@ -1311,8 +1316,6 @@
 
     const tx = window.innerWidth / 2 - screenCX;
     const ty = window.innerHeight / 2 - screenCY;
-
-    if (window._gb3D) window._gb3D.disable();
 
     gameboy.style.transformOrigin = `${screenCX - gbRect.left}px ${screenCY - gbRect.top}px`;
     gameboy.style.transition = 'none';
