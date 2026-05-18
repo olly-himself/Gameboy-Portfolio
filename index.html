@@ -1458,15 +1458,11 @@
   // ─── 3D Mouse Tilt ───
   (function () {
     const gb = document.getElementById('gameboy');
-    const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    const restY = hasMouse ? -10 : -4;
-    const restX = hasMouse ?   3 :  1;
-
-    let targetRotY = restY;
-    let targetRotX = restX;
+    let targetRotY = -10;
+    let targetRotX =   3;
     let currentRotY = -70;
-    let currentRotX =  8;
+    let currentRotX =   8;
     let trackingActive = true;
     let rafId = null;
 
@@ -1474,15 +1470,13 @@
     const MAX_X =  7;
     const LERP  = 0.04;
 
-    if (hasMouse) {
-      window.addEventListener('mousemove', e => {
-        if (!trackingActive) return;
-        const nx = (e.clientX / window.innerWidth  - 0.5) * 2;
-        const ny = (e.clientY / window.innerHeight - 0.5) * 2;
-        targetRotY = nx * MAX_Y;
-        targetRotX = -ny * MAX_X;
-      });
-    }
+    window.addEventListener('mousemove', e => {
+      if (!trackingActive) return;
+      const nx = (e.clientX / window.innerWidth  - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      targetRotY = nx * MAX_Y;
+      targetRotX = -ny * MAX_X;
+    });
 
     function tick() {
       if (!trackingActive) return;
